@@ -1,0 +1,71 @@
+---
+title: "Project 2- Robyn Lewis"
+author: "Robyn Lewis"
+date: "10/4/2020"
+output: 
+  rmarkdown::github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install package "class" for kNN
+#package "tree" for regression trees
+#caret for cv
+
+```
+
+# Introduction
+
+describe data and variables, purpose of analysis
+
+# Data
+
+```{r}
+#read in with relative path
+
+#create training data set (70%) and test set (30%)
+
+#set seed, standardize data
+
+#remember to use TRAIN mean/sd to standardize test data
+#use `caret`- can also remove highly correlated vars
+```
+
+# Summarizations
+
+basic summary statistics and plots about training data 
+
+```{r}
+
+```
+
+# Modeling
+
+models predicting shares response- describe type of model, fitting process, final chosen model
+
+```{r}
+#tree based model, chosen using leave one out cross validation
+
+#use cv.tree, prune.misclass
+```
+
+```{r}
+#boosted tree model chosen using cross validation
+```
+
+# Automation
+
+adapt code to automatically generate a report for each day
+
+```{r}
+
+```
+
+# Packages used
+```{r}
+#class
+#tree
+#caret
+```
+
