@@ -14,6 +14,8 @@ library(tree)
 library(caret)
 library(tidyverse)
 library(dplyr)
+library(ggplot2)
+library(rmarkdown)
 ```
 
 # Introduction
@@ -81,10 +83,25 @@ models predicting shares response- describe type of model, fitting process, fina
 
 adapt code to automatically generate a report for each day
 
-REWATCH THE VIDEO ON MARKDOWN AUTOMATION
+```{r dayOfWeek}
+#need to consolidate weekday_is_* variables into one column. 
+dayOfWeek <- rep(0, nrow(newsData))
+dayNames <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+for (i in newsData[,32:38]){
+  if(newsData[,i]==1){dayOfWeek <- dayNames[i]}
+}
+dayOfWeek
+```
 
-```{r}
 
+
+```{r automation}
+day <- unique(newsData$dayOfWeek)
+output_file <- paste0(day, "Analysis.md")
+params= lapply(day, FUN=function(x){list(day=x)})
+reports <- tibble(output_file, params)
+
+apply(reports, MARGIN=1, FUN=function(x){render(input="/Online News Project.Rmd", output_file=x[[1]], params=x[[2]])})
 ```
 
 # Packages used
@@ -94,6 +111,8 @@ REWATCH THE VIDEO ON MARKDOWN AUTOMATION
 #caret
 #tidyverse
 #dplyr
+#ggplot2
+#rmarkdown
 ```
 
 Data Source Used:
