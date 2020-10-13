@@ -9,27 +9,50 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-#install package "class" for kNN
-#package "tree" for regression trees
-#caret for cv
-
+library(class)
+library(tree)
+library(caret)
+library(tidyverse)
+library(dplyr)
 ```
 
 # Introduction
 
 describe data and variables, purpose of analysis
 
+For this project, we'll be analyzing the popularity of articles published on [Mashable](mashable.com). Popularity is determined by number of shares, with 1400 or interactions considered popular. Our data is available through the  [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity), and consists of 39,644 observations of 61 variables. 
+
 # Data
 
-```{r}
+```{r dataImport}
 #read in with relative path
+newsData <- read_csv("./Raw Data/OnlineNewsPopularity.csv")
 
-#create training data set (70%) and test set (30%)
-
-#set seed, standardize data
+#standardize data
 
 #remember to use TRAIN mean/sd to standardize test data
 #use `caret`- can also remove highly correlated vars
+```
+```{r mondayData}
+#suggestion to look at just Monday data first
+mondayData <- newsData %>% filter(weekday_is_monday==1)
+```
+
+```{r}
+#create training data set (70%) and test set (30%)
+set.seed(1)
+train <- sample(1:nrow(mondayData), size=nrow(mondayData)*0.7)
+test <- dplyr::setdiff(1:nrow(mondayData), train)
+
+newsDataTrain <- mondayData[train,]
+newsDataTest <- mondayData[test,]
+
+#train <- sample(1:nrow(newsData), size=nrow(newsData)*0.7)
+#test <- dplyr::setdiff(1:nrow(newsData), train)
+
+#newsDataTrain <- newsData[train,]
+#newsDataTest <- newsData[test,]
+
 ```
 
 # Summarizations
@@ -58,6 +81,8 @@ models predicting shares response- describe type of model, fitting process, fina
 
 adapt code to automatically generate a report for each day
 
+REWATCH THE VIDEO ON MARKDOWN AUTOMATION
+
 ```{r}
 
 ```
@@ -67,5 +92,14 @@ adapt code to automatically generate a report for each day
 #class
 #tree
 #caret
+#tidyverse
+#dplyr
 ```
+
+Data Source Used:
+
+K. Fernandes, P. Vinagre and P. Cortez. A Proactive Intelligent Decision
+    Support System for Predicting the Popularity of Online News. Proceedings
+    of the 17th EPIA 2015 - Portuguese Conference on Artificial Intelligence,
+    September, Coimbra, Portugal.
 
