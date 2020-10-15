@@ -16,13 +16,14 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(rmarkdown)
+library(knitr)
 ```
 
 # Introduction
 
 describe data and variables, purpose of analysis
 
-For this project, we'll be analyzing the popularity of articles published on [Mashable](mashable.com). Popularity is determined by number of shares, with 1400 or interactions considered popular. Our data is available through the  [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity), and consists of 39,644 observations of 61 variables. 
+For this project, we'll be analyzing the popularity of articles published on [Mashable](mashable.com). Popularity is determined by number of shares, with 1400 or interactions considered popular. Our data is available through the [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity), and consists of 39,644 observations of 61 variables. 
 
 # Data
 
@@ -35,6 +36,16 @@ newsData <- read_csv("./Raw Data/OnlineNewsPopularity.csv")
 #remember to use TRAIN mean/sd to standardize test data
 #use `caret`- can also remove highly correlated vars
 ```
+
+
+```{r addPopular}
+#popularity is classified as having >1400 shares- creating binary variable to reflect popular/not
+popular <- rep(0, nrow(newsData))
+popular <- ifelse(newsData$shares >= 1400, "Yes", "No")
+newsData <- cbind(newsData, popular)
+view(newsData)
+```
+
 ```{r mondayData}
 #suggestion to look at just Monday data first
 mondayData <- newsData %>% filter(weekday_is_monday==1)
@@ -57,12 +68,61 @@ newsDataTest <- mondayData[test,]
 
 ```
 
+
 # Summarizations
 
 basic summary statistics and plots about training data 
 
 ```{r}
+#numerical summaries of some things
 
+newsDataTrain %>% filter(popular=="Yes") %>% select(c(3, 4, 8, 10, 11)) %>% sapply(summary) %>% kable(digits=2, caption="Numeric Summaries of Popular Article Attributes", col.names=c("Words in Title", "Words in Content", "Links", "Images", "Videos"))
+
+newsDataTrain %>% filter(popular=="No") %>% select(c(3, 4, 8, 10, 11)) %>% sapply(summary) %>% kable(digits=2, caption="Numeric Summaries of Unpopular Article Attributes", col.names=c("Words in Title", "Words in Content", "Links", "Images", "Videos"))
+```
+
+
+```{r}
+#histogram of data channels of popular articles
+#subset to mondayData[, 14:19]
+#by popularity
+#side by side, 
+#14:19
+
+#try sum(is.true())
+
+#maybe look at percentage that are popular?
+counts <- rep(NA, 6)
+percents <- rep(NA, 6)
+for (i in 14:19){
+ counts[i-13] <- sum(newsDataTrain[,i]==1 & newsDataTrain$popular=="Yes") 
+ percents[i-13] <- counts[i-13]/sum(newsDataTrain[,i]==1)
+}
+counts <- as.data.frame(counts)
+percents <- as.data.frame(percents)
+```
+
+```{r}
+channel.names <-c("Lifestyle", "Entertainment", "Business", "Social Media", "Tech", "World")
+counts <- cbind(counts, channel.names)
+colnames(counts) <- c("article.count", "data.channel")
+percents <- cbind(percents, channel.names)
+colnames(percents) <- c("percent.popular", "data.channel")
+```
+
+
+```{r}
+ggplot(data=counts, aes(x=data.channel, y=article.count)) +
+  geom_bar(stat="identity", aes(fill=as.factor(data.channel))) +
+  labs(title="Count of Popular Articles by Data Channel", x="Data Channel", y="Number of Popular Articles") +
+  theme(legend.position = "none")
+```
+
+```{r}
+ggplot(data=percents, aes(x=data.channel, y=percent.popular)) +
+  geom_bar(stat="identity", aes(fill=as.factor(data.channel))) +
+  labs(title="Percentage of Popular Articles by Data Channel", x="Data Channel", y="Percentage of Popular Articles") +
+  theme(legend.position = "none")
 ```
 
 # Modeling
@@ -113,6 +173,7 @@ apply(reports, MARGIN=1, FUN=function(x){render(input="/Online News Project.Rmd"
 #dplyr
 #ggplot2
 #rmarkdown
+#knitr
 ```
 
 Data Source Used:
