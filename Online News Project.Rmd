@@ -15,6 +15,7 @@ library(caret)
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
+library(gridExtra)
 library(rmarkdown)
 library(knitr)
 ```
@@ -60,38 +61,24 @@ test <- dplyr::setdiff(1:nrow(mondayData), train)
 newsDataTrain <- mondayData[train,]
 newsDataTest <- mondayData[test,]
 
-#train <- sample(1:nrow(newsData), size=nrow(newsData)*0.7)
-#test <- dplyr::setdiff(1:nrow(newsData), train)
-
-#newsDataTrain <- newsData[train,]
-#newsDataTest <- newsData[test,]
-
 ```
 
 
 # Summarizations
 
-basic summary statistics and plots about training data 
+First we'll examine numerical summaries of selected attributes for the articles- number of words in the title, words in the content, number of links, number of images, and numbers of videos. These are separated into "popular" and "unpopular" articles so that we may compare the attributes of both individually. Number of shares is included here as well, but as it is the defining value for popularity, has a specified range for each category. However, we may be able to gain insight to the variability of the number of shares through this table. 
 
-```{r}
-#numerical summaries of some things
+```{r numSums}
+#numerical summaries of attributes
 
-newsDataTrain %>% filter(popular=="Yes") %>% select(c(3, 4, 8, 10, 11)) %>% sapply(summary) %>% kable(digits=2, caption="Numeric Summaries of Popular Article Attributes", col.names=c("Words in Title", "Words in Content", "Links", "Images", "Videos"))
-
-newsDataTrain %>% filter(popular=="No") %>% select(c(3, 4, 8, 10, 11)) %>% sapply(summary) %>% kable(digits=2, caption="Numeric Summaries of Unpopular Article Attributes", col.names=c("Words in Title", "Words in Content", "Links", "Images", "Videos"))
+#for popular articles
+newsDataTrain %>% filter(popular=="Yes") %>% select(c(3, 4, 8, 10, 11, 61)) %>% sapply(summary) %>% kable(digits=2, caption="Numeric Summaries of Popular Article Attributes", col.names=c("Words in Title", "Words in Content", "Links", "Images", "Videos", "Shares"))
+#for unpopular articles
+newsDataTrain %>% filter(popular=="No") %>% select(c(3, 4, 8, 10, 11, 61)) %>% sapply(summary) %>% kable(digits=2, caption="Numeric Summaries of Unpopular Article Attributes", col.names=c("Words in Title", "Words in Content", "Links", "Images", "Videos", "Shares"))
 ```
 
 
-```{r}
-#histogram of data channels of popular articles
-#subset to mondayData[, 14:19]
-#by popularity
-#side by side, 
-#14:19
-
-#try sum(is.true())
-
-#maybe look at percentage that are popular?
+```{r histData, include=FALSE}
 counts <- rep(NA, 6)
 percents <- rep(NA, 6)
 for (i in 14:19){
@@ -100,9 +87,7 @@ for (i in 14:19){
 }
 counts <- as.data.frame(counts)
 percents <- as.data.frame(percents)
-```
 
-```{r}
 channel.names <-c("Lifestyle", "Entertainment", "Business", "Social Media", "Tech", "World")
 counts <- cbind(counts, channel.names)
 colnames(counts) <- c("article.count", "data.channel")
@@ -110,33 +95,68 @@ percents <- cbind(percents, channel.names)
 colnames(percents) <- c("percent.popular", "data.channel")
 ```
 
+Next we'll look at articles broken down by category. Here we can visualize the total number of widely shared articles by category, as well as the percentage of articles in each category that are considered popular. 
 
-```{r}
+```{r histograms}
 ggplot(data=counts, aes(x=data.channel, y=article.count)) +
   geom_bar(stat="identity", aes(fill=as.factor(data.channel))) +
   labs(title="Count of Popular Articles by Data Channel", x="Data Channel", y="Number of Popular Articles") +
   theme(legend.position = "none")
-```
 
-```{r}
 ggplot(data=percents, aes(x=data.channel, y=percent.popular)) +
   geom_bar(stat="identity", aes(fill=as.factor(data.channel))) +
   labs(title="Percentage of Popular Articles by Data Channel", x="Data Channel", y="Percentage of Popular Articles") +
   theme(legend.position = "none")
 ```
 
+We will also look at number of shares compared to how the title ranks in both subjectivity and polarity. Articles are assigned a value for each on a scale of 0 to 1. 
+```{r}
+s1 <- ggplot(data=newsDataTrain, aes(y=shares)) +
+  geom_point(aes(x=title_subjectivity), color="blue") +
+  labs(title="Shares by Title Subjectivity", x= "Title Subjectivity", y="Shares")
+
+s2 <- ggplot(data=newsDataTrain, aes(y=shares)) +
+  geom_point(aes(x=abs_title_sentiment_polarity), color="red") +
+  labs(title="Shares by Title Polarity", x= "Title Polarity", y="Shares")
+
+grid.arrange(s1, s2, nrow=1)
+  
+```
+Now we will assess the rates of both positive words and negative words in the articles. 
+
+```{r boxplots}
+b1 <- ggplot(data=newsDataTrain, aes(x=popular, y=rate_positive_words)) +
+  geom_boxplot(aes(color=popular)) +
+  labs(title="Rate of Positive Words in Article", x="Popular Articles", y="Rate of Positive Words") +
+  theme(legend.position = "none")
+
+b2 <- ggplot(data=newsDataTrain, aes(x=popular, y=rate_negative_words)) +
+  geom_boxplot(aes(color=popular)) +
+  labs(title="Rate of Negative Words in Article", x="Popular Articles", y="Rate of Negative Words") +
+  theme(legend.position = "none")
+
+grid.arrange(b1, b2, nrow=1)
+```
 # Modeling
 
 models predicting shares response- describe type of model, fitting process, final chosen model
 
 ```{r}
 #tree based model, chosen using leave one out cross validation
-
+#Set controls for our training method
+trCtrl <- trainControl(method="repeatedcv", number=10, repeats=3)
+set.seed(2)
+#formulate our training models
+treeFit <- train(class~., data=diabetesTrain, method="rpart",
+                trControl=trCtrl,
+                preProcess=c("center", "scale"))
+treeFit
 #use cv.tree, prune.misclass
 ```
 
 ```{r}
 #boosted tree model chosen using cross validation
+boostTree <-
 ```
 
 # Automation
@@ -147,8 +167,10 @@ adapt code to automatically generate a report for each day
 #need to consolidate weekday_is_* variables into one column. 
 dayOfWeek <- rep(0, nrow(newsData))
 dayNames <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-for (i in newsData[,32:38]){
-  if(newsData[,i]==1){dayOfWeek <- dayNames[i]}
+  for(j in 1:length(dayOfWeek)){
+    for (i in 32:38){
+  if(newsData[,i]==1){dayOfWeek[j] <- dayNames[i-31]}
+  }
 }
 dayOfWeek
 ```
@@ -172,6 +194,7 @@ apply(reports, MARGIN=1, FUN=function(x){render(input="/Online News Project.Rmd"
 #tidyverse
 #dplyr
 #ggplot2
+#gridExtra
 #rmarkdown
 #knitr
 ```
