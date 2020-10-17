@@ -1,0 +1,35 @@
+---
+title: "Untitled"
+author: "Robyn Lewis"
+date: "10/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r classTree}
+#Set controls for our training method
+trCtrl <- trainControl(method="knn", number=nrow(newsDataTrain))
+set.seed(1)
+#formulate our training models
+treeFit <- train(shares~., data=newsDataTrain, method="rpart",
+                trControl=trCtrl, 
+                tuneGrid=data.frame(cp=.01:1))
+treeFit
+```
+
+```{r}
+prediction <- predict(treeFit, newdata=newsDataTest[,-c(1)], type="raw")
+```
+
+```{r}
+fitControl <- trainControl(method="repeatedcv", number=10, repeats=3)
+gbmGrid <- expand.grid(interaction.depth= c(seq(1:10)), n.trees=(1:30)*50, shrinkage=0.1, n.minobsinnode=20)
+gbmFit <- train(shares~., data=newsDataTrain, 
+                method="gbm", 
+                trControl=fitControl, 
+                tuneGrid=gbmGrid)
+```
+
