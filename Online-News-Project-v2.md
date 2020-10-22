@@ -193,6 +193,7 @@ Project Part 2: Add in a linear regression model of your choice (no need
 to do variable selection, just pick a model) to the modeling section.
 Add in the predictions of the model on the test set.
 
+    #second file provided by owner, edited here to include my code but can't evaluate because of too many errors
     #linear regression model
     fitLM <- lm(shares ~ . -dayOfWeek, data = newsDataTrain)
     fitLM #view the result
