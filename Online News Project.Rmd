@@ -199,13 +199,13 @@ boostTreeFit2 <- gbm(shares~.-dayOfWeek, data=newsDataTrain, distribution="gauss
 Project Part 2: Add in a linear regression model of your choice (no need to do variable selection, just pick a model) to the modeling section. Add in the predictions of the model on the test set.  
 ```{r linearReg}
 #linear regression model
-#fitLM <- lm(shares ~ . -dayOfWeek, data = newsDataTrain)
-#fitLM #view the result
-#plot(fitLM) #view the plot
+fitLM <- lm(shares ~ . -dayOfWeek, data = newsDataTrain)
+fitLM #view the result
+plot(fitLM) #view the plot
 
 #prediction on the test set
-#predLM <- predict(fitLM, newdata = newsDataTest, se.fit = TRUE)
-#predLM #view the result with standard errors $se.fit
+predLM <- predict(fitLM, newdata = newsDataTest, se.fit = TRUE)
+predLM #view the result with standard errors $se.fit
 ```
 
 # Predictions
