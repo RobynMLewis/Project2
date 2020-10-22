@@ -32,6 +32,7 @@ newsData <- read_csv("./Raw Data/OnlineNewsPopularity.csv")
 ```{r dayOfWeek}
 #need to consolidate weekday_is_* variables into one column. 
 dayOfWeek <- rep(NA, nrow(newsData))
+dayNames <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
 for (i in 1:nrow(newsData)){
   for(j in 32:38){
